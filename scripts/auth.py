@@ -15,7 +15,7 @@ CALLBACK_PORT    = 9877
 KEYRING_SERVICE  = "shortart"
 KEYRING_KEY      = "image-creator:session"
 
-SHORTART_API_URL = os.environ.get("SHORTART_API_URL", "https://shortart-api.wenuts.top")
+SHORTART_API_URL = os.environ.get("SHORTART_API_URL", "https://api.shortart.ai")
 
 SESSION_TTL_SECONDS = 58 * 24 * 3600
 
@@ -89,7 +89,24 @@ class ShortArtAuth:
         self._save_token(token)
         return token
 
+    def _free_port(self, port: int):
+        """Kill any process occupying the given port."""
+        import subprocess
+        try:
+            result = subprocess.run(
+                ["lsof", "-ti", f":{port}"],
+                capture_output=True, text=True,
+            )
+            pids = result.stdout.strip().split()
+            for pid in pids:
+                if pid:
+                    subprocess.run(["kill", "-9", pid], check=False)
+                    print(f"[ShortArtAuth] Released port {port} (killed PID {pid})")
+        except Exception as e:
+            print(f"[ShortArtAuth] Warning: could not free port {port}: {e}")
+
     def _start_callback_server_and_wait(self, start_url: str, expected_state: str) -> str:
+        self._free_port(CALLBACK_PORT)
         server = HTTPServer(("localhost", CALLBACK_PORT), _CallbackHandler)
         server.auth_token = None
         server.auth_state = None
@@ -97,6 +114,9 @@ class ShortArtAuth:
 
         thread = threading.Thread(target=server.handle_request, daemon=True)
         thread.start()
+
+        # Wait a bit to ensure server is ready
+        time.sleep(0.5)
 
         print("[ShortArtAuth] Opening browser for Google OAuth...")
         webbrowser.open(start_url)

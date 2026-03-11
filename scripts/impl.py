@@ -62,7 +62,7 @@ def execute(
 
     client = ShortArtClient(
         token=token,
-        base_url="https://shortart-api.wenuts.top",
+        base_url="https://api.shortart.ai",
     )
 
     oss_images = list(images or [])
