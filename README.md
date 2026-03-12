@@ -1,43 +1,76 @@
-# Image Creator External
+<div align="center">
 
-Generate images from text or reference images using ShortArt AI.
+# 🎨 Image Creator External
 
-## Installation
+**Generate stunning images from text or reference images using ShortArt AI**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+
+> 🎉 **FREE TO START!** Generate images you want with just one sentence in a chat.
+
+[Get Started](#-installation) • [Features](#-features) • [Quick Start](#-quick-start)
+
+</div>
+
+---
+
+## 📦 Installation
+
+Run the following command to install the skill:
 
 ```bash
-npx skills add yige666s/image-creator-external
-ln -s ~/.agents/skills/image-creator-external ~/.openclaw/skills/image-creator-external  # install to openclaw
-ln -s ~/.agents/skills/image-creator-external ~/.claude/skills/image-creator-external # install to claude code
+curl -fsSL https://raw.githubusercontent.com/yige666s/image-creator-external/main/install.sh | bash
 ```
 
-## Features
+## ✨ Features
 
-- Text-to-image generation
-- Image-to-image generation with reference photos
-- Multiple AI models (seedream4.5, nano-banana-pro, nano-banana-2)
+- 🖼️ **Text-to-Image** - Generate images from text descriptions
+- 🎭 **Image-to-Image** - Transform images using reference photos
+- 🤖 **Multiple AI Models** - Choose from various AI models
+- 📊 **Flexible Options** - Batch generation, multiple resolutions, and aspect ratios
 
-## Quick Start
+## 🚀 Quick Start
+
+### 1. Get Your API Key
+
+1. Visit [ShortArt.ai](https://shortart.ai) to register an account with Google
+2. Get your API Key from [shortart.ai/key](https://shortart.ai/key)
+3. Configure it in `~/.openclaw/openclaw.json` or export to `~/.zshrc`
+
+### 2. Generate Images
+
+Simply chat with your AI assistant:
+
+```
+Help me generate an image: Costume design drawing, a girl, on a white background,
+wearing a white T-shirt, brown wide-leg pants, white shoes, in the picture
+disassembled model's costume. Generate two images, 4k, 16:9
+```
+
+Then visit [shortart.ai/projects](https://shortart.ai/projects) to view your generated images.
+
+### 3. Available Options
+
+| Option | Values | Note |
+|--------|--------|------|
+| **Model** | `seedream4.5`, `nano-banana-pro`, `nano-banana-2` | Different quality/speed tradeoffs |
+| **Count** | `1`, `2`, `3`, `4` | 4 images requires subscription |
+| **Resolution** | `0.5k`, `1k`, `2k`, `4k` | 4k requires subscription, 0.5k only for nano-banana-2 |
+| **Aspect Ratio** | `1:1`, `16:9`, `9:16` | Standard aspect ratios |
+
+### 4. Image-to-Image Generation
+
+Paste an image into the dialog box to use it as a reference for generation or editing.
 
 ---
-> 🎉 **FREE TO START!** Generate images at [https://shortart.ai](https://shortart.ai)
----
 
-### Generate Image With Chat
-
-If you first use this, it will guide to complete authentication with your Google Account.
-
-If you do not have an account, visit [https://shortart.ai](https://shortart.ai) to register an account with Google.
-
-You can chat with your assistant like `help me generate image : Cute little kitty smiling. In the style of a Pixar 3D animation`, then wait a moment you can visit [https://shortart.ai/projects](https://shortart.ai/projects) to check it.
-
-Meanwhile, you can generate or edit an image, only paste it into the dialog box so that let it knows the image path.
-
-## Requirements
+## 📋 Requirements
 
 - Python 3.7+
-- Lib: keyring, requests
+- `requests` library
 - ShortArt account
 
-## License
+## 📄 License
 
-MIT
+MIT License - see [LICENSE](LICENSE) for details
