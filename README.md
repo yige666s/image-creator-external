@@ -17,10 +17,30 @@
 
 ## 📦 Installation
 
-Run the following command to install the skill:
+### Step 1: Install the skill
 
 ```bash
-curl -fsSL curl -fsSL https://raw.githubusercontent.com/yige666s/image-creator-external/main/Install.sh | bash
+npx skills add yige666s/image-creator-external
+```
+
+This will install the skill to `~/.agents/skills/image-creator-external`.
+
+### Step 2: Create symlink (Optional)
+
+If you need to link the skill to a specific agent directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yige666s/image-creator-external/main/install.sh | bash
+```
+
+Or manually:
+
+```bash
+# For Claude Code
+ln -s ~/.agents/skills/image-creator-external ~/.claude/skills/image-creator-external
+
+# For OpenClaw
+ln -s ~/.agents/skills/image-creator-external ~/.openclaw/skills/image-creator-external
 ```
 
 ## ✨ Features
