@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 
-> 🎉 **FREE TO START!** Generate images you want with just one sentence in a chat.
+> 🎉 **FREE TO START! Generate images you want with just one sentence in a chat.**
 
 [Get Started](#-installation) • [Features](#-features) • [Quick Start](#-quick-start)
 
