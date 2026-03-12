@@ -20,7 +20,7 @@
 Run the following command to install the skill:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yige666s/image-creator-external/main/install.sh | bash
+curl -fsSL curl -fsSL https://raw.githubusercontent.com/yige666s/image-creator-external/main/Install.sh | bash
 ```
 
 ## ✨ Features
