@@ -13,24 +13,6 @@ logger = logging.getLogger(__name__)
 sys.path.insert(0, str(Path(__file__).parent))
 from client import ShortArtClient
 
-
-def _get_token(config: dict) -> str:
-    token = (
-        config.get("shortart_api_token")
-        or os.environ.get("SHORTART_API_TOKEN", "")
-    )
-    if token:
-        return token
-
-    try:
-        from auth import shortart_auth
-        return shortart_auth.get_token() 
-    except ImportError:
-        pass
-
-    return ""
-
-
 def execute(
     prompt: str = "",
     model: str = "",
@@ -47,22 +29,19 @@ def execute(
 
     logger.info(f"[image-creator] prompt={prompt[:60]!r}, model={model}, count={count}")
 
-    token = _get_token(config)
+    api_key = os.environ.get("SHORTART_API_KEY")
 
-    if not token:
+    if not api_key:
         return json.dumps({
             "status": "error",
             "error": (
-                "ShortArt session token not found.\n"
-                "Configure it via one of the following:\n"
-                "  Option 1 (recommended): run python3 scripts/auth.py login to complete Google OAuth\n"
-                "  Option 2: set skills.entries.image-creator.env.SHORTART_API_TOKEN in ~/.openclaw/openclaw.json"
+                "No API key provided. Set SHORTART_API_KEY env var"
             )
         }, ensure_ascii=False)
 
     client = ShortArtClient(
-        token=token,
-        base_url="https://api.shortart.ai",
+        api_key=api_key,
+        base_url="http://localhost:8000"  
     )
 
     oss_images = list(images or [])

@@ -14,15 +14,15 @@ def _get_requests():
 
 
 class ShortArtClient:
-    def __init__(self, token: str = None, base_url: str = None):
+    def __init__(self, api_key: str = None, base_url: str = None):
         self.base_url = (base_url or os.getenv("SHORTART_API_URL")).rstrip("/")
-        self.token = token or os.getenv("SHORTART_API_TOKEN", "")
+        self.api_key = api_key or os.getenv("SHORTART_API_KEY", "")
         self._requests = _get_requests()
 
     def _headers(self) -> Dict[str, str]:
         h = {"Content-Type": "application/json", "Accept": "*/*"}
-        if self.token:
-            h["Authorization"] = f"Bearer {self.token}"
+        if self.api_key:
+            h["Authorization"] = f"Bearer {self.api_key}"
         return h
 
     def _post(self, path: str, payload: dict) -> dict:
@@ -111,8 +111,8 @@ class ShortArtClient:
     def upload_image(self, file_path: str) -> Dict[str, Any]:
         requests = self._requests
         headers = {}
-        if self.token:
-            headers["Authorization"] = f"Bearer {self.token}"
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
         try:
             with open(file_path, "rb") as f:
                 resp = requests.post(

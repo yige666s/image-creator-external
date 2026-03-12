@@ -11,34 +11,37 @@ Generate images using ShortArt backend API, supporting text-to-image and image-t
 
 ## Authentication Setup (Required for First Use)
 
-image-creator requires your ShortArt login credentials. Two methods are supported:
+image-creator requires a ShortArt API Key. There are two ways to configure it:
 
-**Method 1 (Recommended): Google OAuth Auto-Authorization**
-```bash
-python3 scripts/auth.py login
-```
-Browser will open Google login page. After authorization, ShortArt login completes automatically. Token is securely stored in system Keychain, valid for ~58 days. Re-authorization will be prompted when expired.
+### Method 1: OpenClaw Config (Recommended)
 
-> Uses PKCE flow, no client_secret needed, secure.
+Add it to `~/.openclaw/openclaw.json`:
 
-**Method 2: Manual Token Configuration**
-After logging into ShortArt website, copy the token after `Authorization: Bearer` from browser developer tools, and add to `~/.openclaw/openclaw.json`:
 ```json
 {
   "skills": {
     "entries": {
-      "image-creator": {
-        "env": { "SHORTART_API_TOKEN": "paste_your_token_here" }
+      "image-creator-external": {
+        "env": { "SHORTART_API_KEY": "paste_your_api_key_here" }
       }
     }
   }
 }
 ```
 
-**Check Authentication Status:**
+### Method 2: Shell Environment Variable
+
+Add to `~/.zshrc` (or `~/.bashrc` for bash):
+
 ```bash
-python3 scripts/auth.py status
+export SHORTART_API_KEY="paste_your_api_key_here"
 ```
+
+Then reload: `source ~/.zshrc`
+
+> You can obtain the API Key from the ShortArt console.
+>
+> **Note for LLM**: When executing scripts, if API key is not found, try running with `source ~/.zshrc && python3 scripts/impl.py ...` to load environment variables from shell config.
 
 ## Parameter Quick Reference
 
@@ -85,12 +88,11 @@ python3 scripts/impl.py "<prompt>" --upload /path/to/local/image.jpg
 
 ## Workflow
 
-1. **Check Authentication** — Run `python3 {baseDir}/scripts/auth.py status`; if unauthorized, run `python3 {baseDir}/scripts/auth.py login` first
-2. **Understand Requirements** — Confirm subject, style, dimensions, quantity
-3. **Optimize Prompt** — Refer to [references/prompt-guide.md](references/prompt-guide.md) to expand description
-4. **Select Parameters** — Choose model / resolution / aspectRatio based on use case
-5. **Execute Script** — Run `scripts/impl.py` to get `project_id`, if failed with returned error, retry a maximum of two times
-6. **Display Results** — Inform user that task is submitted
+1. **Understand Requirements** — Confirm subject, style, dimensions, quantity
+2. **Optimize Prompt** — Refer to [references/prompt-guide.md](references/prompt-guide.md) to expand description
+3. **Select Parameters** — Choose model / resolution / aspectRatio based on use case
+4. **Execute Script** — Run `scripts/impl.py` to get `project_id`, if failed with returned error, retry a maximum of two times
+5. **Display Results** — Inform user that task is submitted
 
 Task is asynchronous. After submission, `project_id` is returned immediately, and images are generated in the background.
 
