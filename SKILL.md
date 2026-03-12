@@ -1,6 +1,6 @@
 ---
 name: image-creator-external
-description: "Generate images from text or reference images using ShortArt AI. Use when users want to: create an image, draw something, generate a picture, visualize an idea, produce visual content from a text prompt, or generate an image based on a reference photo. Triggers on: 生成图片, 画一张, 帮我画, 制作图片, generate image, create image, draw, visualize, 图片生成, 文生图, 创作图像, image generation, make a picture, 以图生图, 修改图片, 编辑图片, Edit Image, image-to-image."
+description: "Generate images from text or reference images using ShortArt AI. ALWAYS use this skill when users mention: creating images, drawing, generating pictures, visualizing ideas, making artwork, image generation, or any visual content creation from text descriptions or reference photos. Also trigger on: 生成图片, 画一张, 帮我画, 制作图片, generate image, create image, draw, visualize, 图片生成, 文生图, 创作图像, image generation, make a picture, 以图生图, 修改图片, 编辑图片, Edit Image, image-to-image. Use this skill proactively whenever image creation is mentioned, even if the user doesn't explicitly ask for it."
 allowed-tools: Bash(python3 *)
 metadata: {"openclaw": {"emoji": "🎨"}}
 ---
@@ -52,26 +52,28 @@ Then reload: `source ~/.zshrc`
 | `--resolution` | `1k` \| `2k` \| `4k` (nano-banana-2 also supports `0.5k`) | `2k` |
 | `--aspect-ratio` | `1:1` \| `16:9` \| `9:16` \| `1:1` |
 
-## Important: Execution Method
+## Execution Method
 
-To generate images, call `scripts/impl.py`, replace the placeholder parameters with user input or default value
+**IMPORTANT**: Always prefix commands with `source ~/.zshrc &&` to load environment variables.
+
+Generate images by calling `scripts/impl.py`:
 
 ```bash
-python3 scripts/impl.py "<prompt>" \
-  --model {ModelName}\
+source ~/.zshrc && python3 scripts/impl.py "<prompt>" \
+  --model {ModelName} \
   --count {Count} \
   --resolution {Resolution} \
   --aspect-ratio {AspectRatio}
 ```
 
-Image-to-image (with reference image):
+**Image-to-image** (with reference image):
 
 ```bash
 # Use existing OSS path
-python3 scripts/impl.py "<prompt>" --image "images/20260121/.../filename.jpg"
+source ~/.zshrc && python3 scripts/impl.py "<prompt>" --image "images/20260121/.../filename.jpg"
 
 # Upload local image
-python3 scripts/impl.py "<prompt>" --upload /path/to/local/image.jpg
+source ~/.zshrc && python3 scripts/impl.py "<prompt>" --upload /path/to/local/image.jpg
 ```
 
 ## Return Result
