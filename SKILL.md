@@ -78,6 +78,8 @@ source ~/.zshrc && python3 scripts/impl.py "<prompt>" --upload /path/to/local/im
 
 ## Return Result
 
+After generation completes, the script returns:
+
 ```json
 {
   "status": "success",
@@ -85,6 +87,16 @@ source ~/.zshrc && python3 scripts/impl.py "<prompt>" --upload /path/to/local/im
   "credit": "{credit}",
   "sub_credit": "{subCredit}",
   "consumed_credit": "{consumedCredit}",
+  "images": [
+    {
+      "id": "{imageId}",
+      "path": "images/20260314/xxx/filename.jpg",
+      "url": "https://file.shortart.ai/images/20260314/xxx/filename.jpg",
+      "width": 1024,
+      "height": 1024
+    }
+  ],
+  "domain": "https://file.shortart.ai"
 }
 ```
 
@@ -93,10 +105,32 @@ source ~/.zshrc && python3 scripts/impl.py "<prompt>" --upload /path/to/local/im
 1. **Understand Requirements** — Confirm subject, style, dimensions, quantity
 2. **Optimize Prompt** — Refer to [references/prompt-guide.md](references/prompt-guide.md) to expand description
 3. **Select Parameters** — Choose model / resolution / aspectRatio based on use case
-4. **Execute Script** — Run `scripts/impl.py` to get `project_id`, if failed with returned error, retry a maximum of two times
-5. **Display Results** — Inform user that task is submitted
+4. **Execute Script** — Run `scripts/impl.py`, which submits the task and polls for completion
+5. **Handle Result** — Based on the result status:
+   - **Success (status=2)**: Ask user if they want to download images
+   - **Timeout/Pending (status=1)**: Ask user if they want to retry generation
+   - **Failed (status=3)**: Ask user if they want to retry generation
+6. **Download Images** (if user agrees) — Download each image from result:
+   ```bash
+   # macOS/Linux
+   curl -o ~/Downloads/{date}_{description}.{ext} {domain}{image_path}
 
-Task is asynchronous. After submission, `project_id` is returned immediately, and images are generated in the background.
+   # Windows
+   curl -o %USERPROFILE%\Downloads\{date}_{description}.{ext} {domain}{image_path}
+   ```
+   Then inform user of the download location
+7. **Provide Web Link** (if no download) — Direct user to https://shortart.ai/projects/ to view
+
+### Polling Behavior
+
+The script uses `fetch-status` API for efficient polling:
+- **nano-banana-pro**: ~40s, polls every 5-6s
+- **nano-banana-2**: ~43s, polls every 6s
+- **seedream4.5**: ~74s, polls every 8s
+- Timeout: 2-5 minutes depending on parameters
+- On completion (status=2), fetches full project details with `get_project`
+
+Use `--no-wait` flag to return immediately without polling.
 
 ## Reference Files
 

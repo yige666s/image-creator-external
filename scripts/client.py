@@ -15,8 +15,8 @@ def _get_requests():
 
 class ShortArtClient:
     def __init__(self, api_key: str = None, base_url: str = None):
-        self.base_url = (base_url or os.getenv("SHORTART_API_URL")).rstrip("/")
-        self.api_key = api_key or os.getenv("SHORTART_API_KEY", "")
+        self.base_url = base_url
+        self.api_key = api_key
         self._requests = _get_requests()
 
     def _headers(self) -> Dict[str, str]:
@@ -79,6 +79,23 @@ class ShortArtClient:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
+    def fetch_status(self, project_ids: str) -> Dict[str, Any]:
+        try:
+            data = self._get("/api/project/fetch-status", params={"projectIds": project_ids})
+            if data.get("code") == 0:
+                projects = data.get("data", {}).get("projects", [])
+                if projects:
+                    project = projects[0]
+                    return {
+                        "status": "success",
+                        "project_status": project.get("status"),
+                        "project_error": project.get("error"),
+                    }
+                return {"status": "error", "error": "No project found"}
+            return {"status": "error", "error": data.get("message", "Unknown error")}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
     def get_project(self, project_id: str) -> Dict[str, Any]:
         try:
             data = self._get("/api/project/get", params={"projectID": project_id})
@@ -103,6 +120,7 @@ class ShortArtClient:
                     "project_error": project.get("error"),
                     "domain": domain,
                     "images": images,
+                    "result": result,
                 }
             return {"status": "error", "error": data.get("message", "Unknown error")}
         except Exception as e:
@@ -134,5 +152,7 @@ class ShortArtClient:
                     "height": d.get("height"),
                 }
             return {"status": "error", "error": data.get("message", "Upload failed")}
-        except Exception as e:
-            return {"status": "error", "error": str(e)}
+        except Exception as e:      
+            return {"status": "error", "error": str(e)} 
+        
+        
