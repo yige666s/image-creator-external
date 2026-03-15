@@ -19,7 +19,7 @@
 | Query project status/result | GET | `/api/project/get` |
 | Upload local image to OSS | POST | `/api/oss/upload` |
 
-**Base URL:** `http://localhost:8000`  
+**Base URL:** `https://api.shortart.ai`  
 **Auth:** `Authorization: Bearer <api_key>`
 
 ---

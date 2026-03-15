@@ -68,7 +68,13 @@ wearing a white T-shirt, brown wide-leg pants, white shoes, in the picture
 disassembled model's costume. Generate two images, 4k, 16:9
 ```
 
-Then visit [shortart.ai/projects](https://shortart.ai/projects) to view your generated images.
+**Interactive Workflow:**
+
+1. **Task Submission** - your image generate task will submit
+2. **Wait Confirmation** - you can wait for completion or not
+3. **Polling** - ff you agree, AI polls the generation status
+4. **Download Confirmation** - When complete, there will ask if you want to download
+5. **Local Download** - Images are downloaded and then will provide the local file paths
 
 ### 3. Available Options
 

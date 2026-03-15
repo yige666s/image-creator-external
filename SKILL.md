@@ -105,32 +105,35 @@ After generation completes, the script returns:
 1. **Understand Requirements** — Confirm subject, style, dimensions, quantity
 2. **Optimize Prompt** — Refer to [references/prompt-guide.md](references/prompt-guide.md) to expand description
 3. **Select Parameters** — Choose model / resolution / aspectRatio based on use case
-4. **Execute Script** — Run `scripts/impl.py`, which submits the task and polls for completion
-5. **Handle Result** — Based on the result status:
-   - **Success (status=2)**: Ask user if they want to download images
-   - **Timeout/Pending (status=1)**: Ask user if they want to retry generation
-   - **Failed (status=3)**: Ask user if they want to retry generation
-6. **Download Images** (if user agrees) — Download each image from result:
+4. **Submit Task** — Run `scripts/impl.py` to submit the generation task:
    ```bash
-   # macOS/Linux
-   curl -o ~/Downloads/{date}_{description}.{ext} {domain}{image_path}
-
-   # Windows
-   curl -o %USERPROFILE%\Downloads\{date}_{description}.{ext} {domain}{image_path}
+   source ~/.zshrc && python3 scripts/impl.py "<prompt>" --model {model} --count {count}
    ```
-   Then inform user of the download location
-7. **Provide Web Link** (if no download) — Direct user to https://shortart.ai/projects/ to view
+   This returns immediately with `project_id`
+5. **Ask User to Wait** — After task submission, ask user: "Task submitted successfully (project_id: xxx). Do you want to wait for the generation to complete?"
+6. **Poll for Completion** (if user agrees) — Run polling command:
+   ```bash
+   source ~/.zshrc && python3 scripts/impl.py --poll {project_id} --model {model} --count {count} --resolution {resolution}
+   ```
+7. **Handle Result** — Based on the result status:
+   - **Success**: Ask user if they want to download images
+   - **Timeout/Failed**: Ask user if they want to retry
+8. **Download Images** (if user agrees) — Run download command with the full JSON result:
+   ```bash
+   source ~/.zshrc && python3 scripts/impl.py --download '{json_result}'
+   ```
+   Images will be saved to `~/Downloads/` with filenames like `shortart_20260315_143022_1.jpg`
+9. **Inform User** — Tell user the local file paths where images were saved
 
-### Polling Behavior
+**IMPORTANT**: Never expose OSS URLs directly to users. Always download images locally first.
 
-The script uses `fetch-status` API for efficient polling:
+### Polling Parameters
+
+The script estimates completion time based on:
 - **nano-banana-pro**: ~40s, polls every 5-6s
 - **nano-banana-2**: ~43s, polls every 6s
 - **seedream4.5**: ~74s, polls every 8s
 - Timeout: 2-5 minutes depending on parameters
-- On completion (status=2), fetches full project details with `get_project`
-
-Use `--no-wait` flag to return immediately without polling.
 
 ## Reference Files
 

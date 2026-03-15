@@ -42,14 +42,14 @@ def execute(
     resolution: str = "",
     aspect_ratio: str = "",
     upload: str = None,
-    no_wait: bool = False,
+    wait: bool = False,
+    poll: str = None,
+    download: str = None,
     config: Dict[str, Any] = None,
     **kwargs,
 ) -> str:
     if config is None:
         config = {}
-
-    logger.info(f"[image-creator] prompt={prompt[:60]!r}, model={model}, count={count}")
 
     api_key = os.environ.get("SHORTART_API_KEY")
 
@@ -61,8 +61,19 @@ def execute(
 
     client = ShortArtClient(
         api_key=api_key,
-        base_url="http://localhost:8000"  # Change to actual API URL if needed
+        base_url="https://api.shortart.ai"
     )
+
+    # Download mode
+    if download:
+        return _download_images(download, api_key)
+
+    # Poll mode
+    if poll:
+        return _poll_project(client, poll, model, count, resolution)
+
+    # Submit mode
+    logger.info(f"[image-creator] prompt={prompt[:60]!r}, model={model}, count={count}")
 
     oss_images = list(images or [])
 
@@ -86,7 +97,7 @@ def execute(
         )
 
         if result["status"] == "success":
-            print(f"✅ Task submitted successfully (project_id: {result['project_id']})", file=sys.stderr)
+            print(f"✅ Task submitted (project_id: {result['project_id']})", file=sys.stderr)
             break
 
         if attempt < max_retries:
@@ -99,14 +110,18 @@ def execute(
     if result["status"] != "success":
         return json.dumps(result, ensure_ascii=False)
 
-    if no_wait:
-        return json.dumps(result, ensure_ascii=False)
+    # If wait flag is set, poll immediately
+    if wait:
+        return _poll_project(client, result["project_id"], model, count, resolution)
 
-    project_id = result["project_id"]
+    return json.dumps(result, ensure_ascii=False)
+
+
+def _poll_project(client, project_id: str, model: str, count: int, resolution: str) -> str:
+    """Poll project status until completion"""
     interval, timeout, estimated = calculate_polling_params(model, count, resolution)
 
-    print(f"⏳ Waiting for generation (estimated: {estimated}s)...", file=sys.stderr)
-    time.sleep(2)
+    print(f"⏳ Polling project {project_id} (estimated: {estimated}s)...", file=sys.stderr)
 
     elapsed = 0
     while elapsed < timeout:
@@ -120,10 +135,13 @@ def execute(
         if project_status == 2:
             detail = client.get_project(project_id)
             if detail["status"] == "success":
-                result["images"] = detail["images"]
-                result["domain"] = detail["domain"]
-                result["result"] = detail["result"]
-            return json.dumps(result, ensure_ascii=False)
+                return json.dumps({
+                    "status": "success",
+                    "project_id": project_id,
+                    "images": detail["images"],
+                    "domain": detail["domain"],
+                    "result": detail["result"]
+                }, ensure_ascii=False)
         elif project_status == 3:
             return json.dumps({
                 "status": "error",
@@ -141,11 +159,63 @@ def execute(
     }, ensure_ascii=False)
 
 
+def _download_images(result_json: str, api_key: str) -> str:
+    """Download images from result JSON"""
+    from datetime import datetime
+
+    try:
+        import requests
+    except ImportError:
+        return json.dumps({"status": "error", "error": "requests library required"}, ensure_ascii=False)
+
+    try:
+        result = json.loads(result_json)
+    except json.JSONDecodeError:
+        return json.dumps({"status": "error", "error": "Invalid JSON"}, ensure_ascii=False)
+
+    if result.get("status") != "success" or not result.get("images"):
+        return json.dumps({"status": "error", "error": "No images to download"}, ensure_ascii=False)
+
+    domain = result.get("domain", "https://file.shortart.ai/")
+    images = result["images"]
+    downloaded = []
+
+    download_dir = Path.home() / "Downloads"
+    download_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    headers = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    for idx, img in enumerate(images, 1):
+        url = img.get("url") or f"{domain}{img['path']}"
+        ext = Path(img["path"]).suffix or ".jpg"
+        filename = f"shortart_{timestamp}_{idx}{ext}"
+        filepath = download_dir / filename
+
+        try:
+            resp = requests.get(url, headers=headers, timeout=60)
+            resp.raise_for_status()
+            with open(filepath, "wb") as f:
+                f.write(resp.content)
+            downloaded.append(str(filepath))
+            print(f"✅ Downloaded: {filepath}", file=sys.stderr)
+        except Exception as e:
+            print(f"❌ Failed to download image {idx}: {e}", file=sys.stderr)
+
+    return json.dumps({
+        "status": "success",
+        "downloaded": downloaded
+    }, ensure_ascii=False)
+
+
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate images via ShortArt")
-    parser.add_argument("prompt", help="Image description")
+    parser.add_argument("prompt", nargs="?", default="", help="Image description")
     parser.add_argument("--model", default="nano-banana-pro",
                         choices=["seedream4.5", "nano-banana-pro", "nano-banana-2"])
     parser.add_argument("--count", type=int, default=1)
@@ -156,8 +226,10 @@ if __name__ == "__main__":
     parser.add_argument("--image", action="append", dest="images",
                         help="OSS relative path (repeat for multiple)")
     parser.add_argument("--upload", help="Local image file to upload first")
-    parser.add_argument("--no-wait", default=False, action="store_true",
-                        help="Return immediately without waiting for completion")
+    parser.add_argument("--wait", action="store_true",
+                        help="Wait for completion immediately")
+    parser.add_argument("--poll", help="Poll existing project by ID")
+    parser.add_argument("--download", help="Download images from result JSON")
     args = parser.parse_args()
 
     output = execute(
@@ -168,6 +240,8 @@ if __name__ == "__main__":
         resolution=args.resolution,
         aspect_ratio=args.aspect_ratio,
         upload=args.upload,
-        no_wait=args.no_wait,
+        wait=args.wait,
+        poll=args.poll,
+        download=args.download,
     )
     print(output)
